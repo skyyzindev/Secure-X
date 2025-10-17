@@ -14,7 +14,189 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      applications: {
+        Row: {
+          created_at: string
+          description: string | null
+          file_path: string | null
+          id: string
+          name: string
+          status: string
+          technology_stack: string[] | null
+          updated_at: string
+          url: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          file_path?: string | null
+          id?: string
+          name: string
+          status?: string
+          technology_stack?: string[] | null
+          updated_at?: string
+          url?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          file_path?: string | null
+          id?: string
+          name?: string
+          status?: string
+          technology_stack?: string[] | null
+          updated_at?: string
+          url?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "applications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          company: string | null
+          created_at: string
+          email: string
+          full_name: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          company?: string | null
+          created_at?: string
+          email: string
+          full_name?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          company?: string | null
+          created_at?: string
+          email?: string
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      security_scans: {
+        Row: {
+          application_id: string
+          completed_at: string | null
+          created_at: string
+          id: string
+          overall_score: number | null
+          risk_level: string | null
+          scan_duration: number | null
+          scan_type: string
+          started_at: string | null
+          status: string
+          vulnerabilities_found: number | null
+        }
+        Insert: {
+          application_id: string
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          overall_score?: number | null
+          risk_level?: string | null
+          scan_duration?: number | null
+          scan_type?: string
+          started_at?: string | null
+          status?: string
+          vulnerabilities_found?: number | null
+        }
+        Update: {
+          application_id?: string
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          overall_score?: number | null
+          risk_level?: string | null
+          scan_duration?: number | null
+          scan_type?: string
+          started_at?: string | null
+          status?: string
+          vulnerabilities_found?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "security_scans_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vulnerabilities: {
+        Row: {
+          affected_component: string | null
+          category: string
+          code_snippet: string | null
+          created_at: string
+          cve_id: string | null
+          cvss_score: number | null
+          description: string
+          id: string
+          line_number: number | null
+          recommendation: string
+          scan_id: string
+          severity: string
+          status: string
+          title: string
+        }
+        Insert: {
+          affected_component?: string | null
+          category: string
+          code_snippet?: string | null
+          created_at?: string
+          cve_id?: string | null
+          cvss_score?: number | null
+          description: string
+          id?: string
+          line_number?: number | null
+          recommendation: string
+          scan_id: string
+          severity: string
+          status?: string
+          title: string
+        }
+        Update: {
+          affected_component?: string | null
+          category?: string
+          code_snippet?: string | null
+          created_at?: string
+          cve_id?: string | null
+          cvss_score?: number | null
+          description?: string
+          id?: string
+          line_number?: number | null
+          recommendation?: string
+          scan_id?: string
+          severity?: string
+          status?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vulnerabilities_scan_id_fkey"
+            columns: ["scan_id"]
+            isOneToOne: false
+            referencedRelation: "security_scans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
