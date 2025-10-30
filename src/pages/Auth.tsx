@@ -9,6 +9,25 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Shield, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { z } from "zod";
+
+const passwordSchema = z.string()
+  .min(8, 'Senha deve ter pelo menos 8 caracteres')
+  .regex(/[A-Z]/, 'Senha deve conter pelo menos uma letra maiúscula')
+  .regex(/[a-z]/, 'Senha deve conter pelo menos uma letra minúscula')
+  .regex(/[0-9]/, 'Senha deve conter pelo menos um número')
+  .regex(/[^A-Za-z0-9]/, 'Senha deve conter pelo menos um caractere especial');
+
+const signupSchema = z.object({
+  email: z.string().email('Email inválido'),
+  password: passwordSchema,
+  fullName: z.string().trim().min(1, 'Nome é obrigatório').max(100, 'Nome deve ter no máximo 100 caracteres')
+});
+
+const signinSchema = z.object({
+  email: z.string().email('Email inválido'),
+  password: z.string().min(1, 'Senha é obrigatória')
+});
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -38,12 +57,27 @@ export default function Auth() {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.signUp({
+      // Validate form data
+      const validationResult = signupSchema.safeParse({
         email,
         password,
+        fullName
+      });
+
+      if (!validationResult.success) {
+        toast.error(validationResult.error.errors[0].message);
+        setLoading(false);
+        return;
+      }
+
+      const validated = validationResult.data;
+
+      const { error } = await supabase.auth.signUp({
+        email: validated.email,
+        password: validated.password,
         options: {
           data: {
-            full_name: fullName,
+            full_name: validated.fullName,
           },
           emailRedirectTo: `${window.location.origin}/`,
         },
@@ -64,9 +98,23 @@ export default function Auth() {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      // Validate form data
+      const validationResult = signinSchema.safeParse({
         email,
-        password,
+        password
+      });
+
+      if (!validationResult.success) {
+        toast.error(validationResult.error.errors[0].message);
+        setLoading(false);
+        return;
+      }
+
+      const validated = validationResult.data;
+
+      const { error } = await supabase.auth.signInWithPassword({
+        email: validated.email,
+        password: validated.password,
       });
 
       if (error) throw error;
@@ -174,8 +222,11 @@ export default function Auth() {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     disabled={loading}
-                    minLength={6}
+                    minLength={8}
                   />
+                  <p className="text-xs text-muted-foreground">
+                    Mínimo 8 caracteres, incluindo maiúsculas, minúsculas, números e caracteres especiais
+                  </p>
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
                   <Shield className="mr-2 h-4 w-4" />
