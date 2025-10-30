@@ -1,15 +1,16 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-interface SecurityScanRequest {
-  scanId: string;
-  applicationId: string;
-}
+const requestSchema = z.object({
+  scanId: z.string().uuid(),
+  applicationId: z.string().uuid()
+});
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -17,14 +18,50 @@ serve(async (req) => {
   }
 
   try {
+    // Verify authentication
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: 'Authentication required' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Create client with service role for admin operations
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const { scanId, applicationId } = await req.json() as SecurityScanRequest;
+    // Verify user token
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !user) {
+      console.error('Auth error:', authError);
+      return new Response(
+        JSON.stringify({ error: 'Invalid authentication token' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
-    console.log('Starting security scan:', { scanId, applicationId });
+    // Validate and parse request body
+    const body = await req.json();
+    const validationResult = requestSchema.safeParse(body);
+    
+    if (!validationResult.success) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'Invalid request parameters',
+          details: validationResult.error.errors 
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const { scanId, applicationId } = validationResult.data;
+
+    console.log('Starting security scan:', { scanId, applicationId, userId: user.id });
 
     // Update scan status to running
     await supabase
@@ -32,15 +69,43 @@ serve(async (req) => {
       .update({ status: 'running', started_at: new Date().toISOString() })
       .eq('id', scanId);
 
-    // Get application details
-    const { data: app } = await supabase
+    // Get application details and verify ownership
+    const { data: app, error: appError } = await supabase
       .from('applications')
       .select('*')
       .eq('id', applicationId)
       .single();
 
-    if (!app) {
-      throw new Error('Application not found');
+    if (appError || !app) {
+      console.error('Application fetch error:', appError);
+      return new Response(
+        JSON.stringify({ error: 'Application not found' }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Verify user owns the application
+    if (app.user_id !== user.id) {
+      console.warn('Unauthorized access attempt:', { userId: user.id, appUserId: app.user_id });
+      return new Response(
+        JSON.stringify({ error: 'You do not have permission to scan this application' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Verify scan belongs to application
+    const { data: scan, error: scanError } = await supabase
+      .from('security_scans')
+      .select('application_id')
+      .eq('id', scanId)
+      .single();
+
+    if (scanError || !scan || scan.application_id !== applicationId) {
+      console.error('Scan validation error:', scanError);
+      return new Response(
+        JSON.stringify({ error: 'Invalid scan request' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     // Update application status
@@ -107,8 +172,14 @@ Retorne APENAS o JSON no formato especificado, sem markdown ou texto adicional.`
 
     if (!aiResponse.ok) {
       const errorText = await aiResponse.text();
-      console.error('AI API Error:', errorText);
-      throw new Error(`AI API error: ${aiResponse.status}`);
+      console.error('AI API Error:', { status: aiResponse.status, error: errorText });
+      return new Response(
+        JSON.stringify({ 
+          error: 'Security scan failed. Please try again or contact support.',
+          errorId: crypto.randomUUID()
+        }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     const aiData = await aiResponse.json();
@@ -193,10 +264,14 @@ Retorne APENAS o JSON no formato especificado, sem markdown ou texto adicional.`
     );
 
   } catch (error) {
-    console.error('Error in security scan:', error);
+    const errorId = crypto.randomUUID();
+    console.error('Security scan error:', { errorId, error: error instanceof Error ? error.message : 'Unknown error', stack: error instanceof Error ? error.stack : undefined });
 
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
+      JSON.stringify({ 
+        error: 'Security scan failed. Please try again or contact support.',
+        errorId 
+      }),
       { 
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
