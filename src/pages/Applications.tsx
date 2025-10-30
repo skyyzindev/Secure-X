@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Shield, ArrowLeft, Plus, Search, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { z } from "zod";
 
 export default function Applications() {
   const navigate = useNavigate();
@@ -22,6 +23,16 @@ export default function Applications() {
     description: "",
     url: "",
     technology_stack: "",
+  });
+
+  const applicationSchema = z.object({
+    name: z.string().trim().min(1, "Nome é obrigatório").max(100, "Nome deve ter no máximo 100 caracteres"),
+    url: z.string().trim().max(2048, "URL deve ter no máximo 2048 caracteres").refine(
+      (val) => !val || val === "" || z.string().url().safeParse(val).success,
+      "URL inválida"
+    ),
+    description: z.string().max(500, "Descrição deve ter no máximo 500 caracteres"),
+    technology_stack: z.string().max(500, "Stack tecnológica deve ter no máximo 500 caracteres"),
   });
 
   useEffect(() => {
@@ -61,22 +72,34 @@ export default function Applications() {
     setSubmitting(true);
 
     try {
+      // Validate form data
+      const validationResult = applicationSchema.safeParse(formData);
+      if (!validationResult.success) {
+        toast.error(validationResult.error.errors[0].message);
+        setSubmitting(false);
+        return;
+      }
+
+      const validated = validationResult.data;
+
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("Não autenticado");
 
-      const techStack = formData.technology_stack
+      // Sanitize and validate technology stack
+      const techStack = validated.technology_stack
         .split(",")
-        .map(t => t.trim())
-        .filter(Boolean);
+        .map(t => t.trim().slice(0, 50))
+        .filter(Boolean)
+        .slice(0, 20);
 
       const { data: app, error } = await supabase
         .from("applications")
         .insert({
           user_id: session.user.id,
-          name: formData.name,
-          description: formData.description,
-          url: formData.url,
-          technology_stack: techStack,
+          name: validated.name,
+          description: validated.description || null,
+          url: validated.url || null,
+          technology_stack: techStack.length > 0 ? techStack : null,
           status: "pending",
         })
         .select()
