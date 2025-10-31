@@ -53,7 +53,14 @@ const Index = () => {
       <section className="container mx-auto px-4 py-20 text-center animate-fade-in">
         <div className="max-w-4xl mx-auto space-y-8">
           <div className="flex justify-center mb-6">
-            <img src={secureXLogo} alt="SecureX Logo" className="h-24 w-24 object-contain" />
+            <div className="relative">
+              <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full animate-pulse" />
+              <img 
+                src={secureXLogo} 
+                alt="SecureX Logo" 
+                className="relative h-20 w-20 sm:h-24 sm:w-24 md:h-28 md:w-28 lg:h-32 lg:w-32 object-contain rounded-2xl shadow-2xl shadow-primary/30 animate-float ring-4 ring-primary/10 hover:ring-primary/30 transition-all duration-300 hover:scale-110" 
+              />
+            </div>
           </div>
           
           <h2 className="text-5xl md:text-6xl font-bold leading-tight">
