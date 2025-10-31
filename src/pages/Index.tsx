@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Shield, FileSearch, CheckCircle } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import secureXLogo from "@/assets/securex-logo.jpg";
+import secureXLogo from "@/assets/securex-icon.jpg";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -58,7 +58,7 @@ const Index = () => {
               <img 
                 src={secureXLogo} 
                 alt="SecureX Logo" 
-                className="relative h-20 w-20 sm:h-24 sm:w-24 md:h-28 md:w-28 lg:h-32 lg:w-32 object-contain rounded-2xl shadow-2xl shadow-primary/30 animate-float ring-4 ring-primary/10 hover:ring-primary/30 transition-all duration-300 hover:scale-110" 
+                className="relative h-20 w-20 sm:h-24 sm:w-24 md:h-28 md:w-28 lg:h-32 lg:w-32 object-contain rounded-2xl shadow-2xl shadow-primary/30 animate-float ring-4 ring-primary/10 hover:ring-primary/30 transition-all duration-300 hover:scale-110 brightness-95" 
               />
             </div>
           </div>
