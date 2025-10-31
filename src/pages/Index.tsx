@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Shield, FileSearch, CheckCircle } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import secureXLogo from "@/assets/securex-logo.jpg";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -30,7 +31,7 @@ const Index = () => {
       <header className="border-b border-primary/20 bg-card/50 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Shield className="h-8 w-8 text-primary animate-pulse" />
+            <img src={secureXLogo} alt="SecureX Logo" className="h-8 w-8 object-contain" />
             <h1 className="text-2xl font-bold text-gradient">SecureX</h1>
           </div>
           <div className="flex items-center gap-4">
@@ -52,7 +53,7 @@ const Index = () => {
       <section className="container mx-auto px-4 py-20 text-center animate-fade-in">
         <div className="max-w-4xl mx-auto space-y-8">
           <div className="flex justify-center mb-6">
-            <Shield className="h-24 w-24 text-primary animate-pulse" />
+            <img src={secureXLogo} alt="SecureX Logo" className="h-24 w-24 object-contain" />
           </div>
           
           <h2 className="text-5xl md:text-6xl font-bold leading-tight">
