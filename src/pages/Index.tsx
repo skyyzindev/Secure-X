@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Shield, FileSearch, CheckCircle } from "lucide-react";
+import { Shield, FileSearch, CheckCircle, MessageCircle } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import secureXLogo from "@/assets/securex-icon.jpg";
 
@@ -73,7 +73,7 @@ const Index = () => {
             em tempo real usando inteligência artificial avançada.
           </p>
 
-          <div className="flex gap-4 justify-center pt-4">
+          <div className="flex gap-4 justify-center pt-4 flex-wrap">
             <Button 
               size="lg" 
               className="gap-2 text-lg px-8"
@@ -88,6 +88,17 @@ const Index = () => {
               className="text-lg px-8"
             >
               Saiba Mais
+            </Button>
+            <Button 
+              size="lg" 
+              variant="secondary"
+              className="gap-2 text-lg px-8"
+              asChild
+            >
+              <a href="https://discord.gg/X36RjdnReJ" target="_blank" rel="noopener noreferrer">
+                <MessageCircle className="h-5 w-5" />
+                Junte-se a nós no Discord
+              </a>
             </Button>
           </div>
         </div>
