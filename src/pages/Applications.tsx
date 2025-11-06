@@ -125,9 +125,7 @@ export default function Applications() {
         body: { scanId: scan.id, applicationId: app.id },
       });
 
-      if (functionError) {
-        console.error("Erro ao iniciar scan:", functionError);
-      }
+      // Edge function errors are logged server-side for security
 
       toast.success("Aplicação adicionada! Iniciando análise de segurança...");
       setShowDialog(false);
