@@ -3,9 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Shield, FileSearch, CheckCircle, MessageCircle } from "lucide-react";
+import { Shield, FileSearch, CheckCircle } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import secureXLogo from "@/assets/securex-icon.jpg";
+import discordIcon from "@/assets/discord-icon.png";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -91,12 +92,12 @@ const Index = () => {
             </Button>
             <Button 
               size="lg" 
-              variant="secondary"
+              variant="default"
               className="gap-2 text-lg px-8"
               asChild
             >
               <a href="https://discord.gg/X36RjdnReJ" target="_blank" rel="noopener noreferrer">
-                <MessageCircle className="h-5 w-5" />
+                <img src={discordIcon} alt="Discord" className="h-5 w-5 brightness-0 invert" />
                 Junte-se a nós no Discord
               </a>
             </Button>
